@@ -1,1 +1,96 @@
-Oj Leon
+Aplikacija za meetanje za v gore
+-Objaviš če hočeš iti v gore kam in če bi kod šel z tabo
+-Lahko tudi izbereš da bi šel kamor koli 
+-Lahko omejiš tudi tako koliko je stran od tebe, koliko časa si pripravljen hoditi, kakšna je težavnost, maksimalna in minimalna višina gore
+-Napišeš če rabiš prevoz za tja
+-Če imaš že katerega rpijatelja in bi šel še z kom
+-lahko verify če si vodič ali si v kakšnem planinskem društvu
+-ko si nov uporabnik lahko izbereš kaj si že dosegel 
+- ali je vrh koča, jezero, planina(travnik), gora
+
+Imena:
+-solo hike
+-hiking buddies
+
+Analiza trga:
+
+1.CILJNI UPORABNIKI:
+-So ljubitelji narave in pohodništva (od začetnikov do izkušenih planincev).
+-Iščejo partnerje za skupne izlete, saj nimajo vedno prijateljev, ki bi šli z njim
+-Iščejo osebe z določenim nivojem fizične pripravljenosti ali z željo po specifičnih vrstah pohodništva (lahke poti, zahtevne ture, izleti na vrhove, planinske koče).
+-Starost: 18-27
+-Ciljno število aktivnih uporabnikov: 20.000
+2.UPORABNIŠKE FUNKCONALNOSTI
+-Personalizacija: Možnost izbire različnih parametrov, kot so težavnost poti, vrsta gore (koča, jezero, gora) in vrsta izleta (lahka pot, zahtevna pot, solo hike).
+-Iskanje partnerjev: Uporabniki lahko iščejo druge ljudi z določenimi podobnimi interesmi (višina, težavnost, prevoz, itd.).
+-Verifikacija: Možnost verifikacije, če je uporabnik vodič ali član planinskega društva, kar povečuje zaupanje med uporabniki.
+-Mreženje: Možnost iskanja prijateljev, ki so že izbrali določen izlet ali pohodniški cilj, in skupinsko usklajevanje dogodkov.
+3.KONKURENCA
+-Ni prav aplikacije, ki bi bile namenjene iskanju partnerjev za v hribe, so pa podobne aplikacije le da so namenjene na splošno izletom po celem svetu
+-Najvecjo konkurenco nam predstavljajo Facebook skupine in forumi kiso namenjeni povezovanju pohodnikov in iskanju partnerjev za izlete, vendar so bolj disfunkcionalni in ne nudijo enostavnega načina za usklajevanje vseh podrobnosti in bi jih lahko zelo hitro presegli.
+4.PREDNOSTI APLIKACIJE
+-Ciljno usmerjena uporabniška izkušnja: Omogoča specifične nastavitve za pohodništvo (težavnost, prevoz, višina, itd.), kar jo loči od drugih aplikacij, ki so bolj splošne.
+-Socialna komponenta: Povezovanje z drugimi pohodniki in možnost iskanja partnerjev za skupne pohode zagotavlja edinstveno prednost, ker povečuje občutek varnosti in skupnosti.
+-Verifikacija strokovnosti: Z omogočanjem verifikacije za planinske vodiče ali člane planinskih društev bo aplikacija pridobila večjo kredibilnost in zaupanja vrednost.
+-Prilagodljivost in dostopnost: Možnost iskanja destinacij, ki so primerne glede na pripravljenost uporabnika, pomeni, da je aplikacija dostopna tako začetnikom kot izkušenim pohodnikom.
+5.SLABOSTI
+-Nizek začetni trg: Aplikacija je lahko v začetku omejena z majhnim številom uporabnikov, kar pomeni, da iskanje partnerjev v določenih regijah ali za specifične destinacije morda ne bo enostavno.
+-Uporabniška zvestoba: Če uporabniki ne najdejo primerne osebe za pohod ali ne uporabijo aplikacije dovolj pogosto, lahko izgubijo zanimanje.
+6.MOŽNOST ZA RAST
+-Geografska širitev: Razširitev aplikacije na različne države in regije, z vključitvijo lokalnih planinskih društev, lahko poveča število uporabnikov.
+-Povezovanje z blagovnimi znamkami in partnerji: Aplikacija bi lahko sodelovala z blagovnimi znamkami pohodniške opreme, planinskimi društvi in drugimi podjetji v industriji prostega časa za ustvarjanje dodatnih prihodkov in povečanje prepoznavnosti.
+-Dodatne funkcionalnosti: Dodajanje naprednih funkcij, kot so povezovanje z GPS napravami, možnost načrtovanja in sledenja poti, integracija z vremenskimi napovedmi in drugimi funkcijami, bi omogočila še večjo vrednost za uporabnike.
+7.PREMIUM V PRIHODNOSTI
+7.1 Premium paket: "Premium" (cenejši paket)
+-Cena: Na primer 5,99 EUR/mesec
+-Napredno sledenje poti in statistika: Poglobljene funkcije za analizo prehojenih poti, vključno z višinsko razliko, povprečnim tempom in napredkom v primerjavi z preteklimi izleti.
+-Sledenje preko GPS naprav: Možnost sinhronizacije z GPS napravami, pametnimi telefoni ali urami za natančnejše sledenje poti v realnem času.
+-Dostop do izobraževalnih vsebin: Tečaji o varnosti v gorah, treningih za kondicijo ali orientaciji s kompasom, na voljo samo za premium uporabnike.
+-Prioritetna podpora: Hitrejša in boljša uporabniška podpora, dostopna 24/7.
+-Organizacija skupinskih izletov: Možnost organiziranja ekskluzivnih izletov, kjer se lahko premium uporabniki pridružijo in sodelujejo v skupinskih dogodkih.
+-Lični dnevnik in blog: Možnost ustvarjanja osebnega pohodniškega bloga ali dnevnika, kjer lahko uporabniki beležijo svoje dogodivščine, dodajajo slike in delijo izkušnje z drugimi.
+7.2 Premium paket: "Elite Premium" (najdražji paket)
+-Cena: Na primer 9,99 EUR/mesec
+-Vse funkcionalnosti "Premium" + dodatne vrhunske funkcionalnosti:
+-Napredni AR (Obogatena realnost) vodič: Možnost uporabe AR funkcij za boljšo navigacijo v naravi, kjer aplikacija s pomočjo kamere uporabniku prikaže informacije o okoliških vrhovih, gozdovih in potkah.
+-VIP dostop do dogodkov: Ekskluzivna povabila na posebne planinske dogodke, delavnice ali večje pohodniške dogodke, kjer lahko spoznate druge VIP uporabnike.
+-Integracija s pametnimi napravami: Napredna funkcionalnost, ki omogoča integracijo z različnimi pametnimi napravami, kot so napredni GPS sledilniki, merilniki srčnega utripa in druge naprave, ki uporabnikom omogočajo natančno spremljanje njihove fizične pripravljenosti.
+-Prvi dostop do novih funkcij: Elite uporabniki bodo imeli prednost pri preizkušanju novih funkcionalnosti in posodobitev aplikacije pred drugimi uporabniki.
+-Exkluzivni popusti in promocije: Popusti na pohodniško opremo, nastanitev v planinskih kočah ali za vodene ture.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
