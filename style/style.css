@@ -1,6 +1,6 @@
 body {
     font-family: Arial, sans-serif;
-    background: #1c1c1c;
+    background: url(/slike/luca-bravo-_WiRAWxAhtg-unsplash.jpg) no-repeat center center/cover;
     color: white;
     display: flex;
     justify-content: center;
