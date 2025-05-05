@@ -7,25 +7,29 @@
     <link rel="icon" type="image/x-icon" href="/Logo/HikingBuddies.png">
 </head>
 <body>
-    <div class="container">
-            <form class="form" method="POST" action="/login">
-                <h2 id="h2log">Login</h2>
-                <input type="text" name="username" placeholder="Username" required>
-                <input type="password" name="password" placeholder="Password" required>
-                <input type="checkbox" name="koda" value="HTML"> Vodič <br> 
-                <input type="checkbox" name="koda" value="HTML5"> V društvu <br>
-                <textarea name="opis" rows="5" cols="50" placeholder="Vaš opis"></textarea> 
-                <button type="submit">Login</button>
-            </form>
+    <div class="login-background"></div>
+    <div class="login-container">
+        <form class="login-box" method="POST" action="/login">
+            <h2 class="login-title" id="h2log">Login</h2>
+            <input class="login-input" type="text" name="username" placeholder="Username" required>
+            <input class="login-input" type="password" name="password" placeholder="Password" required>
+            
+            <label class="ck"><input  type="checkbox" name="koda" value="HTML"> Vodič</label><br> 
+            <label><input class="ck" type="checkbox" name="koda" value="HTML5"> V društvu</label><br>
+            
+            <textarea class="login-input" name="opis" rows="5" cols="50" placeholder="Vaš opis"></textarea> 
+            <button class="login-btn" type="submit">Login</button>
+        </form>
 
-            <!-- Sign Up Form -->
-            <!-- <form class="form-box" method="POST" action="/signup">
-                <h2>Sign Up</h2>
-                <input type="text" name="username" placeholder="Username" required>
-                <input type="password" name="password" placeholder="Password" required>
-                <button type="submit">Sign Up</button>
-            </form> -->
-
-
+        <!-- Sign Up Form -->
+        <!-- 
+        <form class="form-box" method="POST" action="/signup">
+            <h2>Sign Up</h2>
+            <input type="text" name="username" placeholder="Username" required>
+            <input type="password" name="password" placeholder="Password" required>
+            <button type="submit">Sign Up</button>
+        </form> 
+        -->
+    </div>
 </body>
 </html>

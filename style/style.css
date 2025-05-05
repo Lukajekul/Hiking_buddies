@@ -1,58 +1,206 @@
-body {
-    font-family: Arial, sans-serif;
-    background: url(/slike/luca-bravo-_WiRAWxAhtg-unsplash.jpg) no-repeat center center/cover;
-    color: white;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    margin: 0;
+/* ========== GLOBAL ========== */
+* {
+  box-sizing: border-box;
 }
 
-.container {
-    width: 600px;
-    height: 600px;
-    overflow: hidden;
-    border-radius: 12px;
-    box-shadow: 0 0 10px #000;
-    background-color: #2e2e2e;
-    position: relative;
+body, html {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: 'Inter', sans-serif;
 }
 
-#forms {
-    display: flex;
-    width: 1000px;
-    height: 1000px;
+/* ========== HOME PAGE (index.html) ========== */
+.home-background {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  background: url('/slike/luca-bravo-_WiRAWxAhtg-unsplash.jpg') no-repeat center center/cover;
+  z-index: -1;
 }
 
-input {
-    display: block;
-    margin: auto;
-    width: 70%;
+.home-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 20px;
+  text-align: center;
+}
+
+.home-title {
+  font-family: 'Irish Grover', cursive;
+  font-size: 2rem;
+  color: #000;
+  margin-bottom: 20px;
+  margin-left: -330px;
+}
+
+.home-input-wrapper {
+  background: #000;
+  border-radius: 20px;
+  padding: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 90%;
+  max-width: 500px;
+  margin-bottom: 180px;
+  margin-left: 70px;
+}
+
+.home-input {
+  width: 100%;
+  padding: 12px 20px;
+  font-size: 1.2rem;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: #FFFCFC;
+}
+
+.home-input::placeholder {
+  color: #FFFCFC;
+}
+
+.home-top-buttons {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  gap: 10px;
+}
+
+.home-btn {
+  background: #fff;
+  border-radius: 12px;
+  padding: 10px 20px;
+  font-size: 1rem;
+  color: #000;
+  cursor: pointer;
+  font-weight: bold;
+  border: none;
+  transition: background 0.3s, transform 0.2s;
+  text-decoration: none;
+}
+
+.home-btn:hover {
+  background: #eee;
+  transform: scale(1.05);
+}
+
+.home-logo {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  height: 70px;
+}
+
+.home-logo img {
+  height: 100%;
+}
+
+/* ========== LOGIN PAGE (login.css) ========== */
+.login-background {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  background: url('/slike/luca-bravo-_WiRAWxAhtg-unsplash.jpg') no-repeat center center/cover;
+  z-index: -1;
+}
+
+.login-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 20px;
+  text-align: center;
+}
+
+.login-box {
+  background: rgba(19, 15, 15, 0.95);
+  padding: 40px;
+  border-radius: 20px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.3);
+  max-width: 400px;
+  width: 100%;
+}
+
+.login-title {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 20px;
+  color: #0a7543;
+}
+
+.login-input {
+  width: 100%;
+  padding: 12px 15px;
+  margin-bottom: 15px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+  outline: none;
+}
+
+.ck {
+  padding-left: 0px;
+  margin-left: 0px;
+}
+
+.login-input:focus {
+  border-color: #007bff;
+}
+
+.login-btn {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  background-color: #007bff;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.login-btn:hover {
+  background-color: #0056b3;
+}
+
+.login-link {
+  margin-top: 15px;
+  font-size: 0.9rem;
+}
+
+.login-link a {
+  color: #007bff;
+  text-decoration: none;
+}
+
+.login-link a:hover {
+  text-decoration: underline;
+}
+
+/* ========== MEDIA QUERIES ========== */
+@media (max-width: 600px) {
+  .login-title {
+    font-size: 1.5rem;
+  }
+
+  .login-btn {
+    font-size: 0.9rem;
+  }
+
+  .login-box {
     padding: 30px;
-    margin-top: 20px;
-    border: none;
-    border-radius: 6px;
-}
+  }
 
-button {
-    display: block;
-    margin: auto;
-    width: 50%;
-    padding: 10px;
-    border: none;
-    background: #4caf50;
-    color: white;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: bold;
-    margin-top: 20px;
-}
-
-#h2log {
-    padding-top: 10px;
-    padding-bottom: 10px;
-
-    text-align: center;
-    font-size: 4em;
+  .login-input {
+    font-size: 1rem;
+  }
 }
