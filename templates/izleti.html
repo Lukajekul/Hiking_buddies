@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="sl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Izleti</title>
+    <link rel="stylesheet" href="/style/style.css">
+    <link rel="icon" type="image/x-icon" href="/Logo/HikingBuddies.png">
+</head>
+<body>
+    <div class="izleti-page">
+        <aside class="izleti-sidebar">
+            <div class="izleti-logo">
+                <img src="/Logo/HikingBuddies.png" alt="Logo" class="izleti-logo-img">
+                HikingBuddies
+            </div>
+            <nav class="izleti-menu">
+                <ul>
+                    <li>Profil</li>
+                    <li>Izleti</li>
+                    <li>Skupine</li>
+                    <li>Objave</li>
+                </ul>
+            </nav>
+            <button class="izleti-plus-button" onclick="toggleForm()">＋</button>
+        </aside>
+
+        <main class="izleti-main">
+            <header class="izleti-header">
+                <h1>Izleti</h1>
+            </header>
+            <section class="izleti-content">
+                <!-- Kartice izletov pridejo tukaj -->
+            </section>
+        </main>
+    </div>
+
+    <!-- Obrazec za nov izlet -->
+    <div class="izleti-popup" id="izletiForm">
+        <form action="/dodaj_izlet" method="POST" class="izleti-form">
+            <h2>Dodaj nov izlet</h2>
+            <label>Ciljna točka:
+                <input type="text" name="ciljna_tocka" required>
+            </label>
+            <label>Datum:
+                <input type="date" name="datum" required>
+            </label>
+            <label>Tip vrha:
+                <input type="text" name="tip_vrha">
+            </label>
+            <label>Težavnost:
+                <select name="tezavnost">
+                    <option>Lahka</option>
+                    <option>Srednja</option>
+                    <option>Težka</option>
+                </select>
+            </label>
+            <label>Ferata:
+                <select name="ferata">
+                    <option>Da</option>
+                    <option>Ne</option>
+                </select>
+            </label>
+            <label>Čas hoje (v urah):
+                <input type="number" step="0.1" name="cas_hoje">
+            </label>
+            <label>Število iskanih oseb:
+                <input type="number" name="iskane_osebe">
+            </label>
+            <button type="submit">Shrani</button>
+            <button type="button" onclick="toggleForm()">Zapri</button>
+        </form>
+    </div>
+
+    <script>
+        function toggleForm() {
+            const form = document.getElementById("izletiForm");
+            form.style.display = form.style.display === "block" ? "none" : "block";
+        }
+    </script>
+</body>
+</html>

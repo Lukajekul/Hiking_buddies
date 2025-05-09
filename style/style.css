@@ -236,6 +236,151 @@ body, html {
   padding: 2% 2% 2% 2%;
 } 
 
+/* ========== IZLETI ========== */
+
+
+/* Glavni kontejner */
+.izleti-page {
+    display: flex;
+    height: 100vh;
+    font-family: Arial, sans-serif;
+}
+
+/* Sidebar */
+.izleti-sidebar {
+    width: 25%;
+    background-color: white;
+    padding: 30px 20px;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
+}
+
+.izleti-logo {
+    font-size: 1.5em;
+    color: #007BFF;
+    font-weight: bold;
+    margin-bottom: 50px;
+}
+
+.izleti-menu ul {
+    list-style: none;
+}
+
+.izleti-menu li {
+    margin: 20px 0;
+    font-size: 1.1em;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.izleti-menu li:hover {
+    color: #007BFF;
+}
+
+/* Main section */
+.izleti-main {
+    width: 75%;
+    display: flex;
+    flex-direction: column;
+    background-color: #f5f5f5;
+}
+
+/* Header */
+.izleti-header {
+    background-color: #000;
+    color: white;
+    padding: 25px;
+    font-size: 1.5em;
+}
+
+/* Content section */
+.izleti-content {
+    padding: 30px;
+    flex-grow: 1;
+}
+
+.izleti-logo {
+    display: flex;
+    align-items: center;
+    font-size: 1.5em;
+    color: #007BFF;
+    font-weight: bold;
+    margin-bottom: 40px;
+}
+
+.izleti-logo-img {
+    height: 40px;
+    margin-right: 10px;
+}
+
+.izleti-plus-button {
+    position: absolute;
+    bottom: 30px;
+    left: 20px;
+    font-size: 28px;
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.izleti-plus-button:hover {
+    background-color: #0056b3;
+}
+
+/* Popup obrazec */
+.izleti-popup {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    z-index: 1000;
+}
+
+.izleti-form h2 {
+    margin-bottom: 20px;
+}
+
+.izleti-form label {
+    display: block;
+    margin-bottom: 15px;
+    font-weight: bold;
+}
+
+.izleti-form input,
+.izleti-form select {
+    width: 100%;
+    padding: 8px;
+    margin-top: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.izleti-form button {
+    margin-top: 10px;
+    margin-right: 10px;
+    padding: 8px 15px;
+    border: none;
+    border-radius: 5px;
+    background-color: #007BFF;
+    color: white;
+    cursor: pointer;
+}
+
+.izleti-form button:hover {
+    background-color: #0056b3;
+}
+
+
+
 /* ========== MEDIA QUERIES ========== */
 @media (max-width: 600px) {
   .login-title {
