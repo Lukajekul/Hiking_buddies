@@ -1,10 +1,11 @@
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 from tinydb import TinyDB, Query
 from werkzeug.security import generate_password_hash, check_password_hash
+from datetime import datetime
 
 app = Flask(__name__)
 
-@app.route("/")
+@app.route('/')
 def home():
     return redirect(url_for("login"))
 
@@ -48,24 +49,23 @@ def index():
     prikaz_izleti = [i for i in izleti if datetime.strptime(i['datum'], '%Y-%m-%d').date() >= danes]
     return render_template("index.html", izleti=prikaz_izleti)
 
-@app.route('templates\izleti.html', methods=['POST'])
+@app.route('/dodaj-izlet', methods=['POST'])
 def dodaj_izlet():
-    try:
-        podatki = {
-            "ciljna_tocka": request.form['ciljna_tocka'],
-            "datum": request.form['datum'],
-            "tip_vrha": request.form.get('tip_vrha', ''),
-            "tezavnost": request.form['tezavnost'],
-            "ferata": request.form['ferata'],
-            "cas_hoje": request.form.get('cas_hoje', ''),
-            "iskane_osebe": request.form.get('iskane_osebe', '')
-        }
-        izleti.append(podatki)
-        return redirect(url_for('index'))
-    except Exception as e:
-        return f"Napaka pri shranjevanju izleta: {e}"
+    db = TinyDB("izleti.json")
 
-@app.route("/logout")
+    izlet = {
+        'ciljna_tocka': request.form['ciljna_tocka'],
+        'datum': request.form['datum'],
+        'tip_vrha': request.form['tip_vrha'],
+        'tezavnost': request.form['tezavnost'],
+        'ferata': request.form['ferata'],
+        'cas_hoje': request.form['cas_hoje'],
+        'iskane_osebe': request.form['iskane_osebe']
+    }
+
+    db.insert(izlet)
+    return jsonify(success=True, izlet=izlet)
+@app.route("\logout")
 def logout():
     session.pop("username", None)
     return redirect(url_for("login"))

@@ -86,11 +86,47 @@
         </form>
     </div>
 
-    <script>
-        function toggleForm() {
-            const form = document.getElementById("izletiForm");
-            form.style.display = form.style.display === "block" ? "none" : "block";
+<script>
+document.getElementById('izletForm').addEventListener('submit', function(e) {
+    e.preventDefault(); // prevent page reload
+
+    const form = e.target;
+    const formData = new FormData(form);
+
+    fetch('/dodaj-izlet', {
+        method: 'POST',
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            // Clear form
+            form.reset();
+
+            // Add new card to the DOM
+            const container = document.querySelector('.izleti-content');
+            container.innerHTML += `
+                <div class="izlet-kartica">
+                    <h3>${data.izlet.ciljna_tocka}</h3>
+                    <p><strong>Datum:</strong> ${data.izlet.datum}</p>
+                    <p><strong>Tip vrha:</strong> ${data.izlet.tip_vrha}</p>
+                    <p><strong>Težavnost:</strong> ${data.izlet.tezavnost}</p>
+                    <p><strong>Ferata:</strong> ${data.izlet.ferata}</p>
+                    <p><strong>Čas hoje:</strong> ${data.izlet.cas_hoje} ur</p>
+                    <p><strong>Iskane osebe:</strong> ${data.izlet.iskane_osebe}</p>
+                </div>
+            `;
+
+            // Optionally close popup
+            document.querySelector('.modal').style.display = 'none'; // Adjust selector
+        } else {
+            alert('Napaka pri dodajanju.');
         }
-    </script>
+    })
+    .catch(err => {
+        console.error('Napaka:', err);
+    });
+});
+</script>
 </body>
 </html>
