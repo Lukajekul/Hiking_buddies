@@ -379,6 +379,33 @@ body, html {
     background-color: #0056b3;
 }
 
+.izlet-kartica-blok {
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 18px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    max-width: 600px;
+    transition: transform 0.2s ease;
+}
+
+.izlet-kartica-blok:hover {
+    transform: scale(1.01);
+}
+
+.izlet-kartica-naslov {
+    font-size: 20px;
+    color: #2c3e50;
+    margin-bottom: 10px;
+}
+
+.izlet-kartica-podatek {
+    font-size: 14px;
+    color: #444;
+    margin: 4px 0;
+}
+
 
 
 /* ========== MEDIA QUERIES ========== */

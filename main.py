@@ -39,6 +39,32 @@ def dashboard():
         return f"Welcome, {session['username']}! <a href='/logout'>Logout</a>"
     return redirect(url_for("login"))
 
+
+izleti = []
+
+@app.route('/')
+def index():
+    danes = datetime.today().date()
+    prikaz_izleti = [i for i in izleti if datetime.strptime(i['datum'], '%Y-%m-%d').date() >= danes]
+    return render_template("index.html", izleti=prikaz_izleti)
+
+@app.route('templates\izleti.html', methods=['POST'])
+def dodaj_izlet():
+    try:
+        podatki = {
+            "ciljna_tocka": request.form['ciljna_tocka'],
+            "datum": request.form['datum'],
+            "tip_vrha": request.form.get('tip_vrha', ''),
+            "tezavnost": request.form['tezavnost'],
+            "ferata": request.form['ferata'],
+            "cas_hoje": request.form.get('cas_hoje', ''),
+            "iskane_osebe": request.form.get('iskane_osebe', '')
+        }
+        izleti.append(podatki)
+        return redirect(url_for('index'))
+    except Exception as e:
+        return f"Napaka pri shranjevanju izleta: {e}"
+
 @app.route("/logout")
 def logout():
     session.pop("username", None)

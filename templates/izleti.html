@@ -30,7 +30,21 @@
                 <h1>Izleti</h1>
             </header>
             <section class="izleti-content">
-                <!-- Kartice izletov pridejo tukaj -->
+                {% if izleti %}
+                    {% for izlet in izleti %}
+                    <div class="izlet-kartica-blok">
+                        <h3 class="izlet-kartica-naslov">{{ izlet.ciljna_tocka }}</h3>
+                        <p class="izlet-kartica-podatek"><strong>Datum:</strong> {{ izlet.datum }}</p>
+                        <p class="izlet-kartica-podatek"><strong>Tip vrha:</strong> {{ izlet.tip_vrha }}</p>
+                        <p class="izlet-kartica-podatek"><strong>Težavnost:</strong> {{ izlet.tezavnost }}</p>
+                        <p class="izlet-kartica-podatek"><strong>Ferata:</strong> {{ izlet.ferata }}</p>
+                        <p class="izlet-kartica-podatek"><strong>Čas hoje:</strong> {{ izlet.cas_hoje }} ur</p>
+                        <p class="izlet-kartica-podatek"><strong>Iskane osebe:</strong> {{ izlet.iskane_osebe }}</p>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="ni-izletov">Trenutno ni načrtovanih izletov.</p>
+                {% endif %}
             </section>
         </main>
     </div>
