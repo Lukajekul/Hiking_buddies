@@ -1,44 +1,130 @@
-from flask import Flask, render_template, request, redirect, url_for, session, jsonify
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify, flash
+from flask_sqlalchemy import SQLAlchemy
+from flask_bcrypt import Bcrypt
+from flask_login import LoginManager, login_user, logout_user, login_required, UserMixin, current_user
+import os
+from werkzeug.utils import secure_filename
 from tinydb import TinyDB, Query
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 
+UPLOAD_FOLDER = 'static/slike'
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+
 app = Flask(__name__)
+app.secret_key = 'skrivnost'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-@app.route('/')
-def home():
-    return redirect(url_for("login"))
+db = SQLAlchemy(app)
+bcrypt = Bcrypt(app)
+login_manager = LoginManager(app)
+login_manager.login_view = 'login'
 
-@app.route("/login", methods=["GET", "POST"])
+# ------------------ Model ------------------
+class User(db.Model, UserMixin):
+    id = db.Column(db.Integer, primary_key=True)
+    ime = db.Column(db.String(100))
+    priimek = db.Column(db.String(100))
+    username = db.Column(db.String(150), unique=True, nullable=False)
+    password = db.Column(db.String(200), nullable=False)
+    starost = db.Column(db.Integer)
+    kraj = db.Column(db.String(100))
+    vodic = db.Column(db.Boolean, default=False)
+    drustvo = db.Column(db.Boolean, default=False)
+    opis = db.Column(db.Text)
+    slika = db.Column(db.String(200))  # ime datoteke slike
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+# ------------------ Registracija ------------------
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        ime = request.form['ime']
+        priimek = request.form['priimek']
+        username = request.form['username']
+        password = bcrypt.generate_password_hash(request.form['password']).decode('utf-8')
+        starost = int(request.form['starost'])
+        kraj = request.form['kraj']
+        vodic = 'vodic' in request.form
+        drustvo = 'drustvo' in request.form
+        opis = request.form['opis']
+
+        file = request.files.get('slika')
+        filename = None
+
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(filepath)
+        else:
+            flash("Napaka pri nalaganju slike.")
+            return redirect(request.url)
+
+        # Preveri, če uporabnik že obstaja
+        if User.query.filter_by(username=username).first():
+            flash('Uporabniško ime je že zasedeno!')
+            return redirect(url_for('register'))
+
+        # Shrani novega uporabnika
+        user = User(
+            ime=ime,
+            priimek=priimek,
+            username=username,
+            password=password,
+            starost=starost,
+            kraj=kraj,
+            vodic=vodic,
+            drustvo=drustvo,
+            opis=opis,
+            slika=filename
+        )
+        db.session.add(user)
+        db.session.commit()
+        flash('Registracija uspešna! Prijavi se.')
+
+        return redirect(url_for('login'))
+    return render_template('register.html')
+
+# ------------------ Prijava ------------------
+@app.route('/login', methods=['GET', 'POST'])
 def login():
-    if request.method == "POST":
-        username = request.form["username"]
-        password = request.form["password"]
-        user = db.get(User.username == username)
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        user = User.query.filter_by(username=username).first()
+        if user and bcrypt.check_password_hash(user.password, password):
+            login_user(user)
+            return redirect(url_for('profil'))
+        flash('Napačno uporabniško ime ali geslo.')
+    return render_template('login.html')
 
-        if user and check_password_hash(user["password"], password):
-            session["username"] = username
-            return redirect(url_for("dashboard"))
-        return "Invalid credentials"
-    return render_template("login.html")
+# ------------------ Profil ------------------
+@app.route('/profil')
+@login_required
+def profil():
+    return render_template('profil.html', user=current_user)
 
-@app.route("/signup", methods=["POST"])
-def signup():
-    username = request.form["username"]
-    password = request.form["password"]
-    if db.contains(User.username == username):
-        return "Username already exists"
-    db.insert({
-        "username": username,
-        "password": generate_password_hash(password)
-    })
-    return redirect(url_for("login"))
+# ------------------ Odjava ------------------
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    flash('Odjavljen si.')
+    return redirect(url_for('login'))
 
-@app.route("/dashboard")
-def dashboard():
-    if "username" in session:
-        return f"Welcome, {session['username']}! <a href='/logout'>Logout</a>"
-    return redirect(url_for("login"))
+# ------------------ Ustvari bazo ------------------
+if __name__ == '__main__':
+    with app.app_context():
+        db.create_all()
+    app.run(debug=True)
 
 
 izleti = []
@@ -47,7 +133,7 @@ izleti = []
 def index():
     danes = datetime.today().date()
     prikaz_izleti = [i for i in izleti if datetime.strptime(i['datum'], '%Y-%m-%d').date() >= danes]
-    return render_template("index.html", izleti=prikaz_izleti)
+    return render_template("izleti.html", izleti=prikaz_izleti)
 
 @app.route('/dodaj-izlet', methods=['POST'])
 def dodaj_izlet():
@@ -64,11 +150,9 @@ def dodaj_izlet():
     }
 
     db.insert(izlet)
+    return render_template(url_for('izleti.html'))
     return jsonify(success=True, izlet=izlet)
-@app.route("\logout")
-def logout():
-    session.pop("username", None)
-    return redirect(url_for("login"))
+
 
 
 app.run(debug=True)

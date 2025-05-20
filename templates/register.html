@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prijava</title>
+    <title>Registracija</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -14,8 +14,8 @@
 
         .container {
             width: 100%;
-            max-width: 400px;
-            margin: 100px auto;
+            max-width: 600px;
+            margin: 50px auto;
             background-color: white;
             padding: 40px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -37,12 +37,16 @@
             margin-bottom: 5px;
         }
 
-        input[type="text"], input[type="password"] {
+        input[type="text"], input[type="password"], input[type="number"], input[type="file"], textarea {
             padding: 10px;
             margin: 10px 0 20px;
             border: 1px solid #ddd;
             border-radius: 5px;
             font-size: 16px;
+        }
+
+        input[type="checkbox"] {
+            margin-right: 10px;
         }
 
         button {
@@ -77,7 +81,7 @@
 </head>
 <body>
     <div class="container">
-        <h2>Prijava</h2>
+        <h2>Registracija uporabnika</h2>
 
         <!-- Prikaz flash sporočil -->
         {% with messages = get_flashed_messages() %}
@@ -90,20 +94,43 @@
           {% endif %}
         {% endwith %}
 
-        <form method="POST">
+        <form method="POST" enctype="multipart/form-data" action="{{ url_for('register') }}">
+            <label for="ime">Ime:</label>
+            <input type="text" name="ime" id="ime" required>
+
+            <label for="priimek">Priimek:</label>
+            <input type="text" name="priimek" id="priimek" required>
+
             <label for="username">Uporabniško ime:</label>
             <input type="text" name="username" id="username" required>
 
             <label for="password">Geslo:</label>
             <input type="password" name="password" id="password" required>
 
-            <button type="submit">Prijavi se</button>
+            <label for="starost">Starost:</label>
+            <input type="number" name="starost" id="starost" required>
+
+            <label for="kraj">Kraj bivanja:</label>
+            <input type="text" name="kraj" id="kraj" required>
+
+            <label for="vodic">Vodič:</label>
+            <input type="checkbox" name="vodic">
+
+            <label for="drustvo">Član društva:</label>
+            <input type="checkbox" name="drustvo">
+
+            <label for="opis">O meni:</label>
+            <textarea name="opis" id="opis" rows="4"></textarea>
+
+            <label for="slika">Profilna slika:</label>
+            <input type="file" name="slika" accept="image/*" required>
+
+            <button type="submit">Registriraj se</button>
         </form>
 
-
-    <div class="footer">
-        <p>Še nimaš računa? <a href="{{ url_for('register') }}">Registriraj se</a></p>
-    </div>
+        <div class="footer">
+            <p>Že imate račun?<a href="{{ url_for('login') }}">Prijavite se</a> </p>
+        </div>
     </div>
 </body>
 </html>
