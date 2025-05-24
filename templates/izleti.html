@@ -4,8 +4,179 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Izleti</title>
-    <link rel="stylesheet" href="/style/style.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style/style.css') }}">
     <link rel="icon" type="image/x-icon" href="/Logo/HikingBuddies.png">
+    <style>
+        /* ========== IZLETI ========== */
+
+
+/* Glavni kontejner */
+.izleti-page {
+    display: flex;
+    height: 100vh;
+    font-family: Arial, sans-serif;
+}
+
+/* Sidebar */
+.izleti-sidebar {
+    width: 25%;
+    background-color: white;
+    padding: 30px 20px;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
+}
+
+.izleti-logo {
+    font-size: 1.5em;
+    color: #007BFF;
+    font-weight: bold;
+    margin-bottom: 50px;
+}
+
+.izleti-menu ul {
+    list-style: none;
+}
+
+.izleti-menu li {
+    margin: 20px 0;
+    font-size: 1.1em;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.izleti-menu li:hover {
+    color: #007BFF;
+}
+
+/* Main section */
+.izleti-main {
+    width: 75%;
+    display: flex;
+    flex-direction: column;
+    background-color: #f5f5f5;
+}
+
+/* Header */
+.izleti-header {
+    background-color: #000;
+    color: white;
+    padding: 25px;
+    font-size: 1.5em;
+}
+
+/* Content section */
+.izleti-content {
+    padding: 30px;
+    flex-grow: 1;
+}
+
+.izleti-logo {
+    display: flex;
+    align-items: center;
+    font-size: 1.5em;
+    color: #007BFF;
+    font-weight: bold;
+    margin-bottom: 40px;
+}
+
+.izleti-logo-img {
+    height: 40px;
+    margin-right: 10px;
+}
+
+.izleti-plus-button {
+    position: absolute;
+    bottom: 30px;
+    left: 20px;
+    font-size: 28px;
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.izleti-plus-button:hover {
+    background-color: #0056b3;
+}
+
+/* Popup obrazec */
+.izleti-popup {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    z-index: 1000;
+}
+
+.izleti-form h2 {
+    margin-bottom: 20px;
+}
+
+.izleti-form label {
+    display: block;
+    margin-bottom: 15px;
+    font-weight: bold;
+}
+
+.izleti-form input,
+.izleti-form select {
+    width: 100%;
+    padding: 8px;
+    margin-top: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.izleti-form button {
+    margin-top: 10px;
+    margin-right: 10px;
+    padding: 8px 15px;
+    border: none;
+    border-radius: 5px;
+    background-color: #007BFF;
+    color: white;
+    cursor: pointer;
+}
+
+.izleti-form button:hover {
+    background-color: #0056b3;
+}
+
+.izlet-kartica-blok {
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 18px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    max-width: 600px;
+    transition: transform 0.2s ease;
+}
+
+.izlet-kartica-blok:hover {
+    transform: scale(1.01);
+}
+
+.izlet-kartica-naslov {
+    font-size: 20px;
+    color: #2c3e50;
+    margin-bottom: 10px;
+}
+
+.izlet-kartica-podatek {
+    font-size: 14px;
+    color: #444;
+    margin: 4px 0;
+}
+    </style>
 </head>
 <body>
     <div class="izleti-page">
@@ -50,8 +221,8 @@
     </div>
 
     <!-- Obrazec za nov izlet -->
-    <div class="izleti-popup" id="izletiForm">
-        <form action="/dodaj_izlet" method="POST" class="izleti-form">
+    <div class="izleti-popup" id="izletiForm" style="display: none;">
+        <form class="izleti-form" id="izletiFormInner">
             <h2>Dodaj nov izlet</h2>
             <label>Ciljna točka:
                 <input type="text" name="ciljna_tocka" required>
@@ -87,13 +258,18 @@
     </div>
 
 <script>
-document.getElementById('izletForm').addEventListener('submit', function(e) {
+function toggleForm() {
+    const popup = document.getElementById('izletiForm');
+    popup.style.display = popup.style.display === 'none' ? 'block' : 'none';
+}
+
+document.getElementById('izletiFormInner').addEventListener('submit', function(e) {
     e.preventDefault(); // prevent page reload
 
     const form = e.target;
     const formData = new FormData(form);
 
-    fetch('/dodaj-izlet', {
+    fetch('/dodaj_izlet', {
         method: 'POST',
         body: formData
     })
@@ -106,19 +282,19 @@ document.getElementById('izletForm').addEventListener('submit', function(e) {
             // Add new card to the DOM
             const container = document.querySelector('.izleti-content');
             container.innerHTML += `
-                <div class="izlet-kartica">
-                    <h3>${data.izlet.ciljna_tocka}</h3>
-                    <p><strong>Datum:</strong> ${data.izlet.datum}</p>
-                    <p><strong>Tip vrha:</strong> ${data.izlet.tip_vrha}</p>
-                    <p><strong>Težavnost:</strong> ${data.izlet.tezavnost}</p>
-                    <p><strong>Ferata:</strong> ${data.izlet.ferata}</p>
-                    <p><strong>Čas hoje:</strong> ${data.izlet.cas_hoje} ur</p>
-                    <p><strong>Iskane osebe:</strong> ${data.izlet.iskane_osebe}</p>
+                <div class="izlet-kartica-blok">
+                    <h3 class="izlet-kartica-naslov">${data.izlet.ciljna_tocka}</h3>
+                    <p class="izlet-kartica-podatek"><strong>Datum:</strong> ${data.izlet.datum}</p>
+                    <p class="izlet-kartica-podatek"><strong>Tip vrha:</strong> ${data.izlet.tip_vrha}</p>
+                    <p class="izlet-kartica-podatek"><strong>Težavnost:</strong> ${data.izlet.tezavnost}</p>
+                    <p class="izlet-kartica-podatek"><strong>Ferata:</strong> ${data.izlet.ferata}</p>
+                    <p class="izlet-kartica-podatek"><strong>Čas hoje:</strong> ${data.izlet.cas_hoje} ur</p>
+                    <p class="izlet-kartica-podatek"><strong>Iskane osebe:</strong> ${data.izlet.iskane_osebe}</p>
                 </div>
             `;
 
-            // Optionally close popup
-            document.querySelector('.modal').style.display = 'none'; // Adjust selector
+            // Close popup
+            toggleForm();
         } else {
             alert('Napaka pri dodajanju.');
         }

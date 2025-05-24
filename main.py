@@ -21,6 +21,8 @@ db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///izleti.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # ------------------ Model ------------------
 class User(db.Model, UserMixin):
@@ -120,39 +122,69 @@ def logout():
     flash('Odjavljen si.')
     return redirect(url_for('login'))
 
-# ------------------ Ustvari bazo ------------------
+class Izlet(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    ciljna_tocka = db.Column(db.String(100), nullable=False)
+    datum = db.Column(db.Date, nullable=False)
+    tip_vrha = db.Column(db.String(50))
+    tezavnost = db.Column(db.String(20))
+    ferata = db.Column(db.String(20))
+    cas_hoje = db.Column(db.Float)
+    iskane_osebe = db.Column(db.Integer)
+
+@app.route('/')
+def index():
+    today = datetime.today().date()
+    valid_izleti = Izlet.query.filter(Izlet.datum >= today).order_by(Izlet.datum).all()
+    return render_template("izleti.html", izleti=valid_izleti)
+
+@app.route('/dodaj_izlet', methods=['POST'])
+def dodaj_izlet():
+    try:
+        # Convert form data
+        new_izlet = Izlet(
+            ciljna_tocka=request.form['ciljna_tocka'],
+            datum=datetime.strptime(request.form['datum'], '%Y-%m-%d').date(),
+            tip_vrha=request.form.get('tip_vrha', ''),
+            tezavnost=request.form.get('tezavnost', ''),
+            ferata=request.form.get('ferata', 'Ne'),
+            cas_hoje=float(request.form.get('cas_hoje', 0)),
+            iskane_osebe=int(request.form.get('iskane_osebe', 0))
+        )
+
+        # Validate date
+        if new_izlet.datum < datetime.today().date():
+            return jsonify({'success': False, 'error': 'Datum ne sme biti v preteklosti'}), 400
+        
+        db.session.add(new_izlet)
+        db.session.commit()
+        
+        # Return the new izlet data for JavaScript
+        return jsonify({
+            'success': True,
+            'izlet': {
+                'ciljna_tocka': new_izlet.ciljna_tocka,
+                'datum': new_izlet.datum.strftime('%Y-%m-%d'),
+                'tip_vrha': new_izlet.tip_vrha,
+                'tezavnost': new_izlet.tezavnost,
+                'ferata': new_izlet.ferata,
+                'cas_hoje': new_izlet.cas_hoje,
+                'iskane_osebe': new_izlet.iskane_osebe
+            }
+        })
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 400
+
+def create_tables():
+    with app.app_context():
+        db.create_all()
+
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
     app.run(debug=True)
-
-
-izleti = []
-
-@app.route('/')
-def index():
-    danes = datetime.today().date()
-    prikaz_izleti = [i for i in izleti if datetime.strptime(i['datum'], '%Y-%m-%d').date() >= danes]
-    return render_template("izleti.html", izleti=prikaz_izleti)
-
-@app.route('/dodaj-izlet', methods=['POST'])
-def dodaj_izlet():
-    db = TinyDB("izleti.json")
-
-    izlet = {
-        'ciljna_tocka': request.form['ciljna_tocka'],
-        'datum': request.form['datum'],
-        'tip_vrha': request.form['tip_vrha'],
-        'tezavnost': request.form['tezavnost'],
-        'ferata': request.form['ferata'],
-        'cas_hoje': request.form['cas_hoje'],
-        'iskane_osebe': request.form['iskane_osebe']
-    }
-
-    db.insert(izlet)
-    return render_template(url_for('izleti.html'))
-    return jsonify(success=True, izlet=izlet)
-
-
+    create_tables()
+    app.run(debug=True)
 
 app.run(debug=True)
