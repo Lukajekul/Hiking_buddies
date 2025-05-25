@@ -13,16 +13,18 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
 app = Flask(__name__)
 app.secret_key = 'skrivnost'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
+# FIRST configure the app ⬇️
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///izleti.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# THEN create database instance ⬇️
 db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///izleti.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # ------------------ Model ------------------
 class User(db.Model, UserMixin):
@@ -37,6 +39,7 @@ class User(db.Model, UserMixin):
     drustvo = db.Column(db.Boolean, default=False)
     opis = db.Column(db.Text)
     slika = db.Column(db.String(200))  # ime datoteke slike
+    created_izlets = db.relationship('Izlet', back_populates='creator')
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -108,6 +111,13 @@ def login():
         flash('Napačno uporabniško ime ali geslo.')
     return render_template('login.html')
 
+
+@app.route("/dashboard")
+def dashboard():
+    if "username" in session:
+        return f"Welcome, {session['username']}! <a href='/logout'>Logout</a>"
+    return redirect(url_for("login"))
+
 # ------------------ Profil ------------------
 @app.route('/profil')
 @login_required
@@ -122,15 +132,30 @@ def logout():
     flash('Odjavljen si.')
     return redirect(url_for('login'))
 
+# Asociacijska tabela mora biti definirana ZUNAJ razredov
+izlet_participants = db.Table('izlet_participants',
+    db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
+    db.Column('izlet_id', db.Integer, db.ForeignKey('izlet.id'), primary_key=True)
+)
+
 class Izlet(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     ciljna_tocka = db.Column(db.String(100), nullable=False)
     datum = db.Column(db.Date, nullable=False)
     tip_vrha = db.Column(db.String(50))
     tezavnost = db.Column(db.String(20))
-    ferata = db.Column(db.String(20))
+    ferata = db.Column(db.String(20), default='Ne')
     cas_hoje = db.Column(db.Float)
     iskane_osebe = db.Column(db.Integer)
+    
+    # Povezave
+    creator_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    creator = db.relationship('User', back_populates='created_izlets')
+    participants = db.relationship('User', secondary=izlet_participants, backref=db.backref('prijavljeni_izleti', lazy='dynamic'))
+    
+    # Ostala polja
+    opis = db.Column(db.Text)
+    status = db.Column(db.String(20), default='aktivno')
 
 @app.route('/')
 def index():
@@ -141,25 +166,52 @@ def index():
 @app.route('/dodaj_izlet', methods=['POST'])
 def dodaj_izlet():
     try:
-        # Convert form data
+        # Parse and validate date
+        datum_str = request.form['datum']
+        try:
+            datum_obj = datetime.strptime(datum_str, '%Y-%m-%d').date()
+        except ValueError:
+            return jsonify({'success': False, 'error': 'Neveljaven format datuma.'}), 400
+
+        # Handle 'cas_hoje'
+        cas_hoje_str = request.form.get('cas_hoje', '')
+        if cas_hoje_str == '' or cas_hoje_str is None:
+            cas_hoje_value = 0.0
+        else:
+            try:
+                cas_hoje_value = float(cas_hoje_str)
+            except ValueError:
+                return jsonify({'success': False, 'error': 'Neveljavna vrednost za čas hoje.'}), 400
+
+        # Handle 'iskane_osebe'
+        iskane_osebe_str = request.form.get('iskane_osebe', '')
+        if iskane_osebe_str == '' or iskane_osebe_str is None:
+            iskane_osebe_value = 0
+        else:
+            try:
+                iskane_osebe_value = int(iskane_osebe_str)
+            except ValueError:
+                return jsonify({'success': False, 'error': 'Neveljavna vrednost za število iskanih oseb.'}), 400
+
+        # Create new Izlet
         new_izlet = Izlet(
             ciljna_tocka=request.form['ciljna_tocka'],
-            datum=datetime.strptime(request.form['datum'], '%Y-%m-%d').date(),
+            datum=datum_obj,
             tip_vrha=request.form.get('tip_vrha', ''),
             tezavnost=request.form.get('tezavnost', ''),
             ferata=request.form.get('ferata', 'Ne'),
-            cas_hoje=float(request.form.get('cas_hoje', 0)),
-            iskane_osebe=int(request.form.get('iskane_osebe', 0))
+            cas_hoje=cas_hoje_value,
+            iskane_osebe=iskane_osebe_value
         )
 
-        # Validate date
+        # Validation: date not in past
         if new_izlet.datum < datetime.today().date():
             return jsonify({'success': False, 'error': 'Datum ne sme biti v preteklosti'}), 400
-        
+
         db.session.add(new_izlet)
         db.session.commit()
-        
-        # Return the new izlet data for JavaScript
+
+        # Return the data to update front-end
         return jsonify({
             'success': True,
             'izlet': {
@@ -172,19 +224,19 @@ def dodaj_izlet():
                 'iskane_osebe': new_izlet.iskane_osebe
             }
         })
-        
+
     except Exception as e:
+        # Log the exception for debugging
+        print(f"Error in dodaj_izlet: {e}")
         return jsonify({'success': False, 'error': str(e)}), 400
 
 def create_tables():
     with app.app_context():
         db.create_all()
 
+
+
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
     app.run(debug=True)
-    create_tables()
-    app.run(debug=True)
-
-app.run(debug=True)
