@@ -1,30 +1,204 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="sl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat</title>
-    <link rel="icon" type="image/x-icon" href="/Logo/HikingBuddies.png">
-    <link rel="stylesheet" href="/style/style.css">
-    
+    <title>Skupine</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style/style.css') }}">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='Logo/HikingBuddies.png') }}">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <script src="{{ url_for('static', filename='js/chat.js') }}" defer></script>
 </head>
 <body>
-    <div class="chat-site">
-        <div class="chat-header">
-            Triglav
-        </div>
-        <div class="chat-status">
-            a
-        </div>
-        <div class="chat-talk">
-            a   
-        </div>
-        <div class="chat-message">
-            a
-        </div>
-        <div class="chat-button">
-            a
+    <div class="izleti-page">
+        <aside class="izleti-sidebar">
+            <div class="izleti-logo">
+                <img src="{{ url_for('static', filename='Logo/HikingBuddies.png') }}" alt="Logo" class="izleti-logo-img">
+                HikingBuddies
+            </div>
+            <nav class="izleti-menu">
+                <ul>
+                    <li><a href="/">Izleti</a></li>
+                    <li class="active">Skupine</li>
+                </ul>
+            </nav>
+            <div class="skupine-list">
+                <h3>Moje Skupine</h3>
+                {% for group in groups %}
+                <div class="skupina-item" data-group-id="{{ group.id }}">
+                    {{ group.name }}
+                </div>
+                {% endfor %}
+            </div>
+        </aside>
+
+        <main class="izleti-main">
+            <div class="chat-container">
+                {% for group in groups %}
+                <div id="group-{{ group.id }}" class="group-chat">
+                    <h3>{{ group.name }}</h3>
+                    <div class="messages">
+                        {% for msg in group.messages %}
+                        <div class="message">
+                            <span class="user">{{ msg.user.username }}</span>:
+                            <span class="content">{{ msg.content }}</span>
+                            <small class="time">{{ msg.timestamp.strftime('%H:%M') }}</small>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <form class="send-message" data-group-id="{{ group.id }}">
+                        <input type="text" placeholder="Tvoje sporočilo..." required>
+                        <button type="submit">Pošlji</button>
+                    </form>
+                </div>
+                {% endfor %}
+            </div>
+        </main>
+    </div>
+    <div class="chat-container">
+        <div class="chat-messages" id="chatMessages"></div>
+        <div class="chat-input">
+            <textarea id="messageInput" placeholder="Napišite sporočilo..."></textarea>
+            <button id="sendMessage">Pošlji</button>
         </div>
     </div>
+
+
+
+    <style>
+    .chat-container {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+    }
+
+    .chat-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 20px;
+        background: #f9f9f9;
+    }
+
+    .message {
+        margin: 10px 0;
+        padding: 10px;
+        background: white;
+        border-radius: 5px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .message-time {
+        color: #666;
+        font-size: 0.8em;
+        margin-right: 10px;
+    }
+
+    .chat-input {
+        padding: 20px;
+        border-top: 1px solid #ddd;
+        display: flex;
+        gap: 10px;
+    }
+
+    #messageInput {
+        flex: 1;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        resize: none;
+    }
+
+    #sendMessage {
+        padding: 10px 20px;
+        background: #2c3e50;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    .skupine-list {
+        padding: 15px;
+    }
+
+    .skupina-item {
+        padding: 10px;
+        margin: 5px 0;
+        cursor: pointer;
+        border-radius: 5px;
+    }
+
+    .skupina-item:hover {
+        background: #34495e;
+    }
+
+    .group-chat {
+    border: 1px solid #ddd;
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 5px;
+}
+
+.messages {
+    height: 300px;
+    overflow-y: auto;
+    margin-bottom: 15px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 15px;
+}
+
+.message {
+    margin-bottom: 10px;
+}
+
+.message .user {
+    font-weight: bold;
+    margin-right: 5px;
+}
+
+.message .time {
+    color: #999;
+    font-size: 0.8em;
+    margin-left: 10px;
+}
+    </style>
+    <script>
+        // Send message
+document.querySelectorAll('.send-message').forEach(form => {
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const groupId = this.dataset.groupId;
+        const input = this.querySelector('input');
+        
+        fetch('/send_message', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({
+                group_id: groupId,
+                content: input.value
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                input.value = '';
+                // Add message to UI
+                const messages = this.previousElementSibling;
+                messages.innerHTML += `
+                    <div class="message">
+                        <span class="user">You</span>
+                        <span class="content">${data.content}</span>
+                        <span class="time">Just now</span>
+                    </div>
+                `;
+                messages.scrollTop = messages.scrollHeight;
+            }
+        });
+    });
+});
+    </script>
 </body>
 </html>

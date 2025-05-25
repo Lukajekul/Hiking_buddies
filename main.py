@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify, flash
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
+from flask_wtf.csrf import CSRFProtect
 from flask_login import LoginManager, login_user, logout_user, login_required, UserMixin, current_user
 import os
 from werkzeug.utils import secure_filename
@@ -14,6 +15,8 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 app = Flask(__name__)
 app.secret_key = 'skrivnost'
 
+csrf = CSRFProtect(app)
+
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 # FIRST configure the app ⬇️
@@ -25,6 +28,12 @@ db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
+
+
+izlet_participants = db.Table('izlet_participants',
+    db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
+    db.Column('izlet_id', db.Integer, db.ForeignKey('izlet.id'))
+)
 
 # ------------------ Model ------------------
 class User(db.Model, UserMixin):
@@ -39,7 +48,7 @@ class User(db.Model, UserMixin):
     drustvo = db.Column(db.Boolean, default=False)
     opis = db.Column(db.Text)
     slika = db.Column(db.String(200))  # ime datoteke slike
-    created_izlets = db.relationship('Izlet', back_populates='creator')
+
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -132,11 +141,6 @@ def logout():
     flash('Odjavljen si.')
     return redirect(url_for('login'))
 
-# Asociacijska tabela mora biti definirana ZUNAJ razredov
-izlet_participants = db.Table('izlet_participants',
-    db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
-    db.Column('izlet_id', db.Integer, db.ForeignKey('izlet.id'), primary_key=True)
-)
 
 class Izlet(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -144,18 +148,11 @@ class Izlet(db.Model):
     datum = db.Column(db.Date, nullable=False)
     tip_vrha = db.Column(db.String(50))
     tezavnost = db.Column(db.String(20))
-    ferata = db.Column(db.String(20), default='Ne')
+    ferata = db.Column(db.String(20))
     cas_hoje = db.Column(db.Float)
     iskane_osebe = db.Column(db.Integer)
-    
-    # Povezave
-    creator_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    creator = db.relationship('User', back_populates='created_izlets')
-    participants = db.relationship('User', secondary=izlet_participants, backref=db.backref('prijavljeni_izleti', lazy='dynamic'))
-    
-    # Ostala polja
-    opis = db.Column(db.Text)
-    status = db.Column(db.String(20), default='aktivno')
+
+
 
 @app.route('/')
 def index():
@@ -166,55 +163,25 @@ def index():
 @app.route('/dodaj_izlet', methods=['POST'])
 def dodaj_izlet():
     try:
-        # Parse and validate date
-        datum_str = request.form['datum']
-        try:
-            datum_obj = datetime.strptime(datum_str, '%Y-%m-%d').date()
-        except ValueError:
-            return jsonify({'success': False, 'error': 'Neveljaven format datuma.'}), 400
-
-        # Handle 'cas_hoje'
-        cas_hoje_str = request.form.get('cas_hoje', '')
-        if cas_hoje_str == '' or cas_hoje_str is None:
-            cas_hoje_value = 0.0
-        else:
-            try:
-                cas_hoje_value = float(cas_hoje_str)
-            except ValueError:
-                return jsonify({'success': False, 'error': 'Neveljavna vrednost za čas hoje.'}), 400
-
-        # Handle 'iskane_osebe'
-        iskane_osebe_str = request.form.get('iskane_osebe', '')
-        if iskane_osebe_str == '' or iskane_osebe_str is None:
-            iskane_osebe_value = 0
-        else:
-            try:
-                iskane_osebe_value = int(iskane_osebe_str)
-            except ValueError:
-                return jsonify({'success': False, 'error': 'Neveljavna vrednost za število iskanih oseb.'}), 400
-
-        # Create new Izlet
         new_izlet = Izlet(
             ciljna_tocka=request.form['ciljna_tocka'],
-            datum=datum_obj,
+            datum=datetime.strptime(request.form['datum'], '%Y-%m-%d').date(),
             tip_vrha=request.form.get('tip_vrha', ''),
-            tezavnost=request.form.get('tezavnost', ''),
+            tezavnost=request.form.get('tezavnost', 'Srednja'),
             ferata=request.form.get('ferata', 'Ne'),
-            cas_hoje=cas_hoje_value,
-            iskane_osebe=iskane_osebe_value
+            cas_hoje=float(request.form.get('cas_hoje', 0)),
+            iskane_osebe=int(request.form.get('iskane_osebe', 1))
         )
-
-        # Validation: date not in past
-        if new_izlet.datum < datetime.today().date():
-            return jsonify({'success': False, 'error': 'Datum ne sme biti v preteklosti'}), 400
-
+        
         db.session.add(new_izlet)
         db.session.commit()
-
-        # Return the data to update front-end
+        
+        # Return success with new izlet data
         return jsonify({
             'success': True,
+            'message': 'Izlet uspešno dodan!',
             'izlet': {
+                'id': new_izlet.id,
                 'ciljna_tocka': new_izlet.ciljna_tocka,
                 'datum': new_izlet.datum.strftime('%Y-%m-%d'),
                 'tip_vrha': new_izlet.tip_vrha,
@@ -224,17 +191,103 @@ def dodaj_izlet():
                 'iskane_osebe': new_izlet.iskane_osebe
             }
         })
-
+        
     except Exception as e:
-        # Log the exception for debugging
-        print(f"Error in dodaj_izlet: {e}")
         return jsonify({'success': False, 'error': str(e)}), 400
 
 def create_tables():
     with app.app_context():
         db.create_all()
 
+class Group(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100))
+    izlet_id = db.Column(db.Integer, db.ForeignKey('izlet.id'))
+    messages = db.relationship('Message', backref='group', lazy=True)
 
+class Message(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    content = db.Column(db.Text)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    group_id = db.Column(db.Integer, db.ForeignKey('group.id'))
+
+@app.route('/get_groups')
+def get_groups():
+    groups = Group.query.all()
+    return jsonify([{
+        'id': group.id,
+        'name': group.name
+    } for group in groups])
+
+@app.route('/get_messages/<int:group_id>')
+def get_messages(group_id):
+    messages = Message.query.filter_by(group_id=group_id).order_by(Message.timestamp).all()
+    return jsonify([{
+        'time': msg.timestamp.strftime('%H:%M'),
+        'content': msg.content
+    } for msg in messages])
+
+@app.route('/send_message', methods=['POST'])
+def send_message():
+    data = request.get_json()
+    new_message = Message(
+        group_id=data['group_id'],
+        user_id=1,  # Replace with actual user ID
+        content=data['content']
+    )
+    db.session.add(new_message)
+    db.session.commit()
+    return jsonify({'success': True})
+
+@app.route('/skupine')
+def skupine():
+    groups = Group.query.all()  # Make sure you have Group model defined
+    return render_template("chat.html", groups=groups)
+
+@app.route('/pro')
+def pro():
+    groups = Group.query.all()  # Make sure you have Group model defined
+    return render_template("profil.html", groups=groups)
+
+@app.route('/izl')
+def izl():
+    groups = Group.query.all()  # Make sure you have Group model defined
+    return render_template("izleti.html", groups=groups)
+
+@app.route('/join_izlet/<int:izlet_id>', methods=['POST'])
+@login_required
+def join_izlet(izlet_id):
+    izlet = Izlet.query.get_or_404(izlet_id)
+    
+    # Check if date has passed
+    if izlet.datum < datetime.today().date():
+        return jsonify({'success': False, 'error': 'Datum izleta je že mimo!'})
+    
+    # Check if there are available spots
+    current_participants = len(izlet.participants)
+    if current_participants >= izlet.iskane_osebe:
+        return jsonify({'success': False, 'error': 'Ni več prostih mest!'})
+    
+    # Add user to izlet
+    if current_user not in izlet.participants:
+        izlet.participants.append(current_user)
+        db.session.commit()
+        
+        # Add to group chat automatically
+        group = Group.query.filter_by(izlet_id=izlet.id).first()
+        if not group:
+            group = Group(name=izlet.ciljna_tocka, izlet_id=izlet.id)
+            db.session.add(group)
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Uspešno pridružen izletu!',
+            'group_id': group.id
+        })
+    
+    return jsonify({'success': False, 'error': 'Že sodelujete v tem izletu!'})
 
 if __name__ == '__main__':
     with app.app_context():

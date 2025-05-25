@@ -6,6 +6,7 @@
     <title>Izleti</title>
     <link rel="stylesheet" href="/style/style.css">
     <link rel="icon" type="image/x-icon" href="/Logo/HikingBuddies.png">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <style>
         /* Glavni kontejner */
 .izleti-page {
@@ -173,6 +174,20 @@
     color: #444;
     margin: 4px 0;
 }
+.join-btn {
+    background: #4CAF50;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.join-btn:hover {
+    background: #45a049;
+}
+
     </style>
 </head>
 <body>
@@ -184,10 +199,9 @@
             </div>
             <nav class="izleti-menu">
                 <ul>
-                    <li>Profil</li>
+                    <li><a href="{{ url_for('pro') }}">Profil</a></li>
                     <li>Izleti</li>
-                    <li>Skupine</li>
-                    <li>Objave</li>
+                    <li><a href="{{ url_for('skupine') }}">Skupine</a></li>
                 </ul>
             </nav>
             <button class="izleti-plus-button" onclick="toggleForm()">＋</button>
@@ -208,6 +222,7 @@
                         <p class="izlet-kartica-podatek"><strong>Ferata:</strong> {{ izlet.ferata }}</p>
                         <p class="izlet-kartica-podatek"><strong>Čas hoje:</strong> {{ izlet.cas_hoje }} ur</p>
                         <p class="izlet-kartica-podatek"><strong>Iskane osebe:</strong> {{ izlet.iskane_osebe }}</p>
+                        <button class="join-btn" data-izlet-id="{{ izlet.id }}">Pridruži se</button>
                     </div>
                     {% endfor %}
                 {% else %}
@@ -260,45 +275,96 @@ function toggleForm() {
     popup.style.display = popup.style.display === 'none' ? 'block' : 'none';
 }
 
+// Form submission handler
 document.getElementById('izletiFormInner').addEventListener('submit', function(e) {
-    e.preventDefault(); // prevent page reload
-
+    e.preventDefault();
+    
     const form = e.target;
-    const formData = new FormData(form);
-
+    const submitBtn = form.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Pošiljanje...';
+    
     fetch('/dodaj_izlet', {
         method: 'POST',
-        body: formData
+        body: new FormData(form)
     })
-    .then(res => res.json())
+    .then(response => {
+        if (!response.ok) throw new Error('Network error');
+        return response.json();
+    })
     .then(data => {
         if (data.success) {
-            // Clear form
-            form.reset();
-
-            // Add new card to the DOM
-            const container = document.querySelector('.izleti-content');
-            container.innerHTML += `
+            toggleForm();
+            const newCard = `
                 <div class="izlet-kartica-blok">
                     <h3 class="izlet-kartica-naslov">${data.izlet.ciljna_tocka}</h3>
-                    <p class="izlet-kartica-podatek"><strong>Datum:</strong> ${data.izlet.datum}</p>
+                    <p class="izlet-kartica-podatek"><strong>Datum:</strong> ${new Date(data.izlet.datum).toLocaleDateString('sl-SI')}</p>
                     <p class="izlet-kartica-podatek"><strong>Tip vrha:</strong> ${data.izlet.tip_vrha}</p>
                     <p class="izlet-kartica-podatek"><strong>Težavnost:</strong> ${data.izlet.tezavnost}</p>
                     <p class="izlet-kartica-podatek"><strong>Ferata:</strong> ${data.izlet.ferata}</p>
                     <p class="izlet-kartica-podatek"><strong>Čas hoje:</strong> ${data.izlet.cas_hoje} ur</p>
                     <p class="izlet-kartica-podatek"><strong>Iskane osebe:</strong> ${data.izlet.iskane_osebe}</p>
+                    <button class="join-btn" data-izlet-id="${data.izlet.id}">Pridruži se</button>
                 </div>
             `;
-
-            // Close popup
-            toggleForm();
+            document.querySelector('.izleti-content').insertAdjacentHTML('afterbegin', newCard);
+            form.reset();
+            // Add event listener to the new button
+            document.querySelector(`.join-btn[data-izlet-id="${data.izlet.id}"]`).addEventListener('click', handleJoinClick);
         } else {
-            alert('Napaka pri dodajanju.');
+            alert('Napaka: ' + data.error);
         }
     })
-    .catch(err => {
-        console.error('Napaka:', err);
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Napaka pri pošiljanju: ' + error.message);
+    })
+    .finally(() => {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Shrani';
     });
+});
+
+// Join button click handler
+function handleJoinClick() {
+    const izletId = this.dataset.izletId;
+    const button = this;
+    
+    button.disabled = true;
+    button.textContent = 'Procesiram...';
+    
+    fetch(`/join_izlet/${izletId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token() }}'
+        }
+    })
+    .then(response => {
+        if (!response.ok) throw new Error('Network error');
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            window.location.href = `/skupine#group-${data.group_id}`;
+        } else {
+            alert(data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Napaka pri pridruževanju: ' + error.message);
+    })
+    .finally(() => {
+        button.disabled = false;
+        button.textContent = 'Pridruži se';
+    });
+}
+
+// Add event listeners to existing join buttons
+document.querySelectorAll('.join-btn').forEach(btn => {
+    btn.addEventListener('click', handleJoinClick);
 });
 </script>
 </body>

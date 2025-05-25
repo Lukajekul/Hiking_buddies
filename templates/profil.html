@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
   <title>Profil</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
   <style>
@@ -136,8 +137,8 @@
     <div class="logo"><img src="/Logo/HikingBuddies.png" alt="Logo"></div>
     <hr>
     <a href="#" class="menu-item">Profil</a>
-    <a href="izleti.html" class="menu-item">Izleti</a>
-    <a href="skupine.html" class="menu-item">Skupine</a>
+    <a href="{{ url_for('izl') }}" class="menu-item">Izleti</a>
+    <a href="{{ url_for('skupine') }}" class="menu-item">Skupine</a>
     <div class="menu-item"><a href = "{{ url_for('logout') }}">Odjava</a></div>
   </nav>
   <main class="content">
